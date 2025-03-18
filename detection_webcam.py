@@ -59,10 +59,12 @@ def on_message(client, userdata, message):
 
 def capture_image():
     """Captures an image from the Raspberry Pi camera and saves it."""
+    time.sleep(0.2)
     ret, frame = camera.read()
     if ret:
         image_path = "captured_image.jpg"
         cv2.imwrite(image_path, frame)
+        cv2.waitKey(100)
         return image_path, frame
     else:
         print("Error capturing image from camera!")
