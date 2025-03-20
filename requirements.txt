@@ -2,5 +2,5 @@ paho-mqtt==2.1.0
 python-telegram-bot==21.11.1
 opencv-python==4.9.0.80
 paho-mqtt==2.1.0
-inference-sdk==0.0.9
+inference-sdk
 numpy==1.26.4
