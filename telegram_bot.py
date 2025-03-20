@@ -48,11 +48,11 @@ user_chat_ids = {}
 # Function to generate the main keyboard
 def get_keyboard():
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("Take Picture", callback_data="mqtt_button_1")],
-        [InlineKeyboardButton("Current Dust Reading", callback_data="mqtt_button_2")],
-        [InlineKeyboardButton("Current Sound Reading", callback_data="mqtt_button_3")],
+        [InlineKeyboardButton("📷 Take Picture", callback_data="mqtt_button_1")],
+        [InlineKeyboardButton("🌫 Current Dust Reading", callback_data="mqtt_button_2")],
+        [InlineKeyboardButton("🔊 Current Sound Reading", callback_data="mqtt_button_3")],
         [InlineKeyboardButton("Placeholder Button", callback_data="button_1")],
-        [InlineKeyboardButton("Graphs", callback_data="button_2")]
+        [InlineKeyboardButton("📈 Graphs", callback_data="button_2")]
     ])
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -97,9 +97,9 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         # Optionally, update with another set of buttons based on the action
         elif button_id == "button_2":
             new_keyboard = [
-                [InlineKeyboardButton("Get Dust Graph", callback_data="mqtt_button_4")],
-                [InlineKeyboardButton("Get Sound Graph", callback_data="mqtt_button_5")],
-                [InlineKeyboardButton("Get Camera Violations Graph", callback_data="mqtt_button_6")],
+                [InlineKeyboardButton("🌫📈 Get Dust Graph", callback_data="mqtt_button_4")],
+                [InlineKeyboardButton("🔊📈 Get Sound Graph", callback_data="mqtt_button_5")],
+                [InlineKeyboardButton("📷📈 Get Camera Violations Graph", callback_data="mqtt_button_6")],
                 [InlineKeyboardButton("<< Back", callback_data="back")],
             ]
             await query.edit_message_text(
@@ -117,7 +117,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /help is issued."""
-    await update.message.reply_text("Help! I can echo messages and send updates from MQTT.")
+    await update.message.reply_text("Hello! I am a Telegram Bot designed to help you publish and subscribe to your edge device. I also serve as the User Interface for viewing analytics conducted on the edge!")
 
 # async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 #     """Echo the user message."""
