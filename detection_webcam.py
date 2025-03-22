@@ -4,11 +4,13 @@ import paho.mqtt.client as mqtt
 from inference_sdk import InferenceHTTPClient
 import threading
 import base64
+import json
 
 # MQTT Broker details
-MQTT_BROKER = "localhost"  # Update with your MQTT broker IP
+MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
 PM_STATUS_TOPIC = "sensor/pm_status"
+PM_ALERT_TOPIC = "sensor/PMAlertMessage"
 NOISE_STATUS_TOPIC = "sensor/noise_status"
 REPORT_TOPIC = "sensor/report"
 GET_PICTURE_TOPIC = "topic/getPicture"
@@ -17,12 +19,17 @@ PICTURE_TOPIC = "sensor/picture"
 # Initialize Roboflow Inference Client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
-    api_key="oh9hNBTlYsNEEKdFRg2I"  # Replace with your API key
+    api_key="oh9hNBTlYsNEEKdFRg2I"
 )
 
 # Model IDs
 HEADPHONE_MODEL_ID = "1-mcruc/3"
 MASK_MODEL_ID = "mask-wearing/18"
+
+# Alert intervals so it doesn't spam user and store readings
+latest_pm_reading = 0
+last_pm_alert_time = 0
+ALERT_INTERVAL = 15  # seconds
 
 # Setup Raspberry Pi camera
 camera = cv2.VideoCapture(0)
@@ -32,19 +39,22 @@ detect_mask = False
 detect_headphones = False
 
 def on_message(client, userdata, message):
-    """MQTT Callback function that updates detection states based on sensor data."""
-    global detect_mask, detect_headphones
+    global detect_mask, detect_headphones, latest_pm_reading
     topic = message.topic
     payload = message.payload.decode("utf-8")
-    
     if topic == PM_STATUS_TOPIC:
-        if payload == "HIGH":
-            print("High pollution detected! Starting continuous mask detection...")
-            detect_mask = True
-        elif payload == "LOW":
-            print("Pollution levels are normal. Stopping mask detection.")
-            detect_mask = False
-    
+        try:
+            data = json.loads(payload)
+            status = data.get("status", "LOW")
+            latest_pm_reading = data.get("pm2_5", 0)
+            if status == "HIGH":
+                print("High pollution detected! Starting continuous mask detection...")
+                detect_mask = True
+            else:
+                print("Pollution levels are normal. Stopping mask detection.")
+                detect_mask = False
+        except json.JSONDecodeError:
+            print("Error decoding PM_STATUS payload:", payload)
     elif topic == NOISE_STATUS_TOPIC:
         if payload == "HIGH":
             print("High noise detected! Starting continuous headphone detection...")
@@ -58,14 +68,15 @@ def on_message(client, userdata, message):
         capture_and_publish_image()
 
 def capture_image():
-    """Captures an image from the Raspberry Pi camera and saves it."""
-    time.sleep(0.2)
-    ret, frame = camera.read()
+    for _ in range(3):
+        ret, frame = camera.read()
+        time.sleep(0.1)
     if ret:
+        frame_resized = cv2.resize(frame, (416, 416))
         image_path = "captured_image.jpg"
-        cv2.imwrite(image_path, frame)
+        cv2.imwrite(image_path, frame_resized)
         cv2.waitKey(100)
-        return image_path, frame
+        return image_path, frame_resized
     else:
         print("Error capturing image from camera!")
         return None, None
@@ -86,10 +97,8 @@ def detect_object(image_path, model_id):
 
         # Ensure 'predictions' exist and is not empty
         if result.get('predictions') and len(result['predictions']) > 0:
-            return result['predictions'][0]['class']  # Extracts the first detected class
-        
-        return "No detection"  # Return this if nothing is detected
-    
+            return result['predictions'][0]['class']
+        return "No detection"
     return "No detection"
 
 def publish_screenshot(image_frame):
@@ -98,6 +107,23 @@ def publish_screenshot(image_frame):
     encoded_image = base64.b64encode(buffer).decode('utf-8')
     client.publish(REPORT_TOPIC, encoded_image)
     print("Screenshot published to MQTT topic: report")
+
+def prepare_and_publish_pm_alert(image_frame):
+    global last_pm_alert_time
+    current_time = time.time()
+    if current_time - last_pm_alert_time >= ALERT_INTERVAL:
+        _, buffer = cv2.imencode('.jpg', image_frame)
+        encoded_image = base64.b64encode(buffer).decode('utf-8')
+        alert_payload = {
+            "message": "No mask detected while PM2.5 is high!",
+            "pm_reading": latest_pm_reading,
+            "image": encoded_image
+        }
+        client.publish(PM_ALERT_TOPIC, json.dumps(alert_payload))
+        print("Alert sent to sensor/PMAlertMessage")
+        last_pm_alert_time = current_time
+    else:
+        print("Skipping alert to avoid spamming...")
 
 def detection_loop():
     """Continuously detects while thresholds remain high."""
@@ -115,8 +141,9 @@ def detection_loop():
             # Publish screenshot if 'no-mask' or 'no-headset' is detected
             if mask_result == "no-mask" or headphone_result == "no-headset":
                 publish_screenshot(image_frame)
-
-        time.sleep(1)  # Adjust as needed
+            if detect_mask and mask_result == "no-mask":
+                prepare_and_publish_pm_alert(image_frame)
+        time.sleep(1)
 
 # MQTT Setup
 client = mqtt.Client()
