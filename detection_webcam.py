@@ -6,6 +6,10 @@ import base64
 import json
 import numpy as np
 from tensorflow.keras.models import load_model
+import csv
+from datetime import datetime
+import matplotlib.pyplot as plt
+import pandas as pd
 
 # MQTT Broker details
 MQTT_BROKER = "localhost"
@@ -37,6 +41,58 @@ earmuff_model = load_model("earmuff_detector.keras")
 hog = cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
+# CSV file to store violations
+CSV_FILE = "violations.csv"
+
+# Check if the file exists and write headers if it's a new file
+def initialize_csv():
+    try:
+        with open(CSV_FILE, mode='r', newline='') as file:
+            pass  # File exists
+    except FileNotFoundError:
+        with open(CSV_FILE, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["timestamp", "violation_type"])  # Headers
+
+initialize_csv()
+
+# Function to add violation to CSV
+def add_violation(violation_type):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(CSV_FILE, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([timestamp, violation_type])
+
+# Helper function to generate graph
+def generate_violation_graph():
+    # Read the CSV into a pandas DataFrame
+    df = pd.read_csv(CSV_FILE)
+
+    # Separate the data based on violation type
+    no_mask_df = df[df['violation_type'] == 'no_mask']
+    no_earmuff_df = df[df['violation_type'] == 'no_earmuff']
+
+    # Create a plot
+    plt.figure(figsize=(10,6))
+
+    # Plot no mask violations
+    plt.plot(no_mask_df['timestamp'], [1] * len(no_mask_df), 'ro', label="No Mask Violations")
+
+    # Plot no earmuff violations
+    plt.plot(no_earmuff_df['timestamp'], [1] * len(no_earmuff_df), 'bo', label="No Earmuff Violations")
+
+    plt.xticks(rotation=45)
+    plt.xlabel("Time")
+    plt.ylabel("Violations")
+    plt.title("Violations Graph")
+    plt.legend()
+
+    plt.tight_layout()
+
+    # Save the plot to a file
+    plt.savefig("/tmp/violation_graph.png")
+    plt.close()
+
 # MQTT callback
 def on_message(client, userdata, message):
     global detect_mask, detect_headphones, latest_pm_reading
@@ -60,6 +116,16 @@ def on_message(client, userdata, message):
     elif topic == GET_PICTURE_TOPIC:
         print("Received request to capture an image.")
         capture_and_publish_image()
+
+    elif topic == "topic/getViolationGraphs":
+        print("Received request for violation graph")
+        generate_violation_graph()
+
+        # Send graph as image
+        with open("/tmp/violation_graph.png", "rb") as img_file:
+            encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
+            client.publish("sensor/violation_graph", encoded_image)
+            print("Published violation graph to topic:", "sensor/violation_graph")
 
 # Capture and resize image
 def capture_image():
@@ -151,10 +217,17 @@ def detection_loop():
             print("Mask Result:", mask_result)
             print("Headphone Result:", headphone_result)
 
+            # Mark violations if any
+            if mask_result == "no-mask":
+                add_violation("no_mask")
+            if headphone_result == "without_earmuff":
+                add_violation("no_earmuff")
+
             if mask_result == "no-mask" or headphone_result == "without_earmuff":
                 publish_screenshot(image_frame)
             if detect_mask and mask_result == "no-mask":
                 prepare_and_publish_pm_alert(image_frame)
+        
         time.sleep(1)
 
 # MQTT setup
