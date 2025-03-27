@@ -21,6 +21,14 @@ PM_STATUS_TOPIC = "sensor/pm_status"
 
 CSV_FILE = "pm_readings.csv" # to save readings and generate graphs
 
+SENSOR_CSV_FILE = "sensor_readings.csv"  # CSV file to store sensor readings
+
+# Create CSV file with headers if it doesn't exist
+if not os.path.isfile(SENSOR_CSV_FILE):
+    with open(SENSOR_CSV_FILE, mode='w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=["national", "year", "month", "day", "hour"])
+        writer.writeheader()
+
 # Setup MQTT client
 client = mqtt.Client()
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
@@ -107,6 +115,15 @@ try:
                     "timestamp": timestamp
                 }
 
+                # Prepare the reading to save to CSV
+                reading = {
+                    "national": pm2_5_atm,  # PM2.5 value
+                    "year": sg_time.year,    # Year from timestamp
+                    "month": sg_time.month,  # Month from timestamp
+                    "day": sg_time.day,      # Day from timestamp
+                    "hour": sg_time.hour,    # Hour from timestamp
+                }
+
                 # Publish PM2.5 status
                 client.publish(PM_STATUS_TOPIC, json.dumps(payload))
                 print(f"Published to {PM_STATUS_TOPIC}: {payload}")
@@ -115,6 +132,11 @@ try:
                 with open(CSV_FILE, mode='a', newline='') as file:
                     writer = csv.writer(file)
                     writer.writerow([timestamp, status, pm2_5_atm])
+
+                # Save readings for ML to CSV file
+                with open(SENSOR_CSV_FILE, mode='a', newline='') as file:
+                    writer = csv.DictWriter(file, fieldnames=["national", "year","month", "day", "hour"])
+                    writer.writerow(reading)
 
             except struct.error:
                 print("Error: Unable to unpack data. Skipping frame...")
