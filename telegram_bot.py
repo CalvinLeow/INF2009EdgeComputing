@@ -128,6 +128,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("sensor/pm_reading")
     client.subscribe("sensor/pm_graph")
     client.subscribe("sensor/PMAlertMessage")
+    client.subscribe("sensor/SoundAlert")
 
 def on_message(client, userdata, msg):
     """Called when a message is received from the MQTT broker."""
