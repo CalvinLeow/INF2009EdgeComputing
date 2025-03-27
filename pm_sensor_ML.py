@@ -10,7 +10,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 df = pd.read_csv('psi_df_2016_2019.csv')
 
 # Load the sensor data
-sensor_df = pd.read_csv('sensor_readings2.csv', on_bad_lines='skip')
+sensor_df = pd.read_csv('sensor_readings.csv', on_bad_lines='skip')
 
 # Convert the 'timestamp' column to datetime format
 df['timestamp'] = pd.to_datetime(df['timestamp'])
@@ -75,7 +75,7 @@ plt.show()
 # Function to read the last 3 rows from sensor_readings.csv without relying on timestamp
 def get_last_3_readings():
     # Read the sensor readings CSV file
-    sensor_df = pd.read_csv('sensor_readings2.csv')
+    sensor_df = pd.read_csv('sensor_readings.csv')
 
     # Assuming that the most recent readings are at the end of the file
     # Get the last 3 readings (if available)
