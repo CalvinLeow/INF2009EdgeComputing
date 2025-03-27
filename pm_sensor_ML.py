@@ -59,17 +59,17 @@ r2 = r2_score(y_test, y_pred)
 # Display evaluation metrics
 print(f"MAE: {mae}, MSE: {mse}, R2: {r2}")
 
-# %%
-# Visualize actual vs predicted values
-plt.figure(figsize=(10, 6))
-plt.scatter(y_test, y_pred, alpha=0.5)
-plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--', label="Ideal Prediction")
-plt.xlabel('Actual PM2.5 Levels')
-plt.ylabel('Predicted PM2.5 Levels')
-plt.title('Actual vs Predicted PM2.5 Levels for Next 5 Hour(s)')
-plt.legend()
-plt.grid(True)
-plt.show()
+# # %%
+# # Visualize actual vs predicted values
+# plt.figure(figsize=(10, 6))
+# plt.scatter(y_test, y_pred, alpha=0.5)
+# plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--', label="Ideal Prediction")
+# plt.xlabel('Actual PM2.5 Levels')
+# plt.ylabel('Predicted PM2.5 Levels')
+# plt.title('Actual vs Predicted PM2.5 Levels for Next 5 Hour(s)')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
 
 # %%
 # Function to read the last 3 rows from sensor_readings.csv without relying on timestamp
