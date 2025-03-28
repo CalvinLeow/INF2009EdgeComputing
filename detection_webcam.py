@@ -238,7 +238,8 @@ client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.subscribe([
     (PM_STATUS_TOPIC, 0),
     (NOISE_STATUS_TOPIC, 0),
-    (GET_PICTURE_TOPIC, 0)
+    (GET_PICTURE_TOPIC, 0),
+    (GET_GRAPH_TOPIC,0)
 ])
 
 print("MQTT client initialized. Waiting for sensor events...")
