@@ -7,10 +7,11 @@ import paho.mqtt.client as mqtt
 import time
 
 # Konfiguration
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "172.20.10.2"
 MQTT_PORT = 1883
 MQTT_TOPIC_RETRAIN = "audio/retrain"  
-MQTT_TOPIC_ALERT = "sensor/SoundAlert"  
+MQTT_TOPIC_ALERT = "sensor/SoundAlert"
+NOISE_STATUS_ALERT = "sensor/noise_status"
 MAX_LOG_ENTRIES = 1000  
 DELETE_ENTRIES = 100  
 
@@ -74,11 +75,23 @@ def audio_callback(indata, frames, time_info, status):
     
     # Alert at 50 dB
     if spl_actual > 50 and not alert_sent:
-        client.publish(MQTT_TOPIC_ALERT, f"Alert, decibel reached now {spl_actual:.2f} dB")
+        noise_payload = {
+            "status": "HIGH",
+            "db": spl_actual,
+            "timestamp": timestamp
+            }
+        client.publish(NOISE_STATUS_ALERT, json.dumps(noise_payload))
+        #client.publish(MQTT_TOPIC_ALERT, f"Alert, decibel reached now {spl_actual:.2f} dB")
         alert_sent = True
         print("Alert sent: SPL over 50 dB")
     elif spl_actual <= 50:
-        client.publish(MQTT_TOPIC_ALERT, "Everything clear. Decibel is now {spl_actual:.2f} dB")
+        noise_payload = {
+            "status": "LOW",
+            "db": spl_actual,
+            "timestamp": timestamp
+            }
+        #client.publish(MQTT_TOPIC_ALERT, "Everything clear. Decibel is now {spl_actual:.2f} dB")
+        client.publish(NOISE_STATUS_ALERT, json.dumps(noise_payload))
         alert_sent = False  
         print("Clear message sent")
 

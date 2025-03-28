@@ -138,8 +138,14 @@ def on_message(client, userdata, message):
             print("Error decoding PM_STATUS payload:", payload)
 
     elif topic == NOISE_STATUS_TOPIC:
-        detect_headphones = payload == "HIGH"
-        print("Noise detection:", "ON" if detect_headphones else "OFF")
+        try:
+            data = json.loads(payload)
+            status = data.get("status", "LOW")
+            latest_db_reading = data.get("db", 0)
+            detect_headphone = status == "HIGH"
+            print("Noise status:", "HIGH - EarMuffs detection ON" if detect_headphones else "LOW - EarMuffs detection OFF")
+        except json.JSONDecodeError:
+            print("Error decoding PM_STATUS payload:", payload)
 
     elif topic == GET_PICTURE_TOPIC:
         print("Received request to capture an image.")
