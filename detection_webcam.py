@@ -20,6 +20,7 @@ NOISE_STATUS_TOPIC = "sensor/noise_status"
 REPORT_TOPIC = "sensor/report"
 GET_PICTURE_TOPIC = "topic/getPicture"
 PICTURE_TOPIC = "sensor/picture"
+GET_GRAPH_TOPIC = "topic/getGraph/camera"
 
 # Alert interval settings
 latest_pm_reading = 0
@@ -117,7 +118,7 @@ def on_message(client, userdata, message):
         print("Received request to capture an image.")
         capture_and_publish_image()
 
-    elif topic == "topic/getViolationGraphs":
+    elif topic == GET_GRAPH_TOPIC:
         print("Received request for violation graph")
         generate_violation_graph()
 
