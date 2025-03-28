@@ -131,6 +131,9 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("sensor/SoundAlert")
     client.subscribe("sensor/pm_prediction")
     client.subscribe("sensor/violation_graph")
+    client.subscribe("sensor/sound_reading")
+    client.subscribe("sensor/sound_graph")
+    client.subscribe("sensor/SoundAlert")
 
 def on_message(client, userdata, msg):
     """Called when a message is received from the MQTT broker."""
@@ -157,7 +160,16 @@ async def handle_mqtt_message(chat_id, topic, message):
             parsed = json.loads(message.decode())
             formatted = "\n".join([f"{r['timestamp']}: {r['pm2_5']} ug/m3 ({r['status']})" for r in parsed])
             await application.bot.send_message(chat_id=chat_id, text=f"Latest PM Readings:\n{formatted}")
+        elif topic == "sensor/sound_reading":
+            parsed = json.loads(message.decode())
+            formatted = f"Timestamp: {parsed['timestamp']}\nSound Level: {parsed['sound_level']} dB"
+            await application.bot.send_message(chat_id=chat_id, text=f"Latest PM Readings:\n{formatted}")
+        elif topic == "sensor/SoundAlert":
+            await application.bot.send_message(chat_id=chat_id, text=message.decode())
         elif topic == "sensor/pm_graph":
+            image_file = BytesIO(message)
+            await application.bot.send_photo(chat_id=chat_id, photo=image_file, caption="PM2.5 Graph")
+        elif topic == "sensor/sound_graph":
             image_file = BytesIO(message)
             await application.bot.send_photo(chat_id=chat_id, photo=image_file, caption="PM2.5 Graph")
         elif topic == "sensor/pm_prediction":
