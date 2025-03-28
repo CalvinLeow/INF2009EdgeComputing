@@ -22,7 +22,7 @@ MQTT_PORT = 1883
 
 # Define the Telegram Bot token
 TELEGRAM_BOT_TOKEN = "7268963773:AAFSMbtVJGDl19mxgQXNvayK5wXyGCqp72Q"
-ALLOWED_CHAT_IDS = {2021714746, -4746695132, -4718771410, 5387486591}  # Set of allowed chat IDs
+ALLOWED_CHAT_IDS = {2021714746, -4746695132, -4718771410, 5387486591,40684146}  # Set of allowed chat IDs
 
 # Define the MQTT topics and messages in a dictionary
 MQTT_BUTTONS = {
