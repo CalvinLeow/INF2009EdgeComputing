@@ -75,13 +75,24 @@ def audio_callback(indata, frames, time_info, status):
     
     # Alert at 50 dB
     if spl_actual > 50 and not alert_sent:
-        client.publish(MQTT_TOPIC_ALERT, f"Alert, decibel reached now {spl_actual:.2f} dB")
-        client.publish(MQTT_Topic_camAlert, "HIGH")
+        noise_payload = {
+            "status": "HIGH",
+            "db": spl_actual,
+            "timestamp": timestamp
+            }
+        client.publish(NOISE_STATUS_ALERT, json.dumps(noise_payload))
+        #client.publish(MQTT_TOPIC_ALERT, f"Alert, decibel reached now {spl_actual:.2f} dB")
         alert_sent = True
         print("Alert sent: SPL over 50 dB")
-    elif spl_actual <= 50 and alert_sent:
-        client.publish(MQTT_TOPIC_ALERT, "Everything clear. Decibel is now {spl_actual:.2f} dB")
-        client.publish(MQTT_Topic_camAlert, "LOW")
+    
+elif spl_actual <= 50:
+        noise_payload = {
+            "status": "LOW",
+            "db": spl_actual,
+            "timestamp": timestamp
+            }
+        #client.publish(MQTT_TOPIC_ALERT, "Everything clear. Decibel is now {spl_actual:.2f} dB")
+        client.publish(NOISE_STATUS_ALERT, json.dumps(noise_payload))
         alert_sent = False  
         print("Clear message sent")
 
