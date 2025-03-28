@@ -130,6 +130,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("sensor/PMAlertMessage")
     client.subscribe("sensor/SoundAlert")
     client.subscribe("sensor/pm_prediction")
+    client.subscribe("sensor/violation_graph")
 
 def on_message(client, userdata, msg):
     """Called when a message is received from the MQTT broker."""
@@ -165,6 +166,9 @@ async def handle_mqtt_message(chat_id, topic, message):
                 chat_id=chat_id,
                 text=f"Predicted PM2.5 value in 5 hours: {predicted_value} µg/m³"
             )
+        elif topic == "sensor/violation_graph":
+            image_file = BytesIO(message)
+            await application.bot.send_photo(chat_id=chat_id, photo=image_file, caption="Violation Graph")
 
         else:
             await application.bot.send_message(chat_id=chat_id, text=message.decode())

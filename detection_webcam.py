@@ -64,35 +64,62 @@ def add_violation(violation_type):
         writer = csv.writer(file)
         writer.writerow([timestamp, violation_type])
 
-# Helper function to generate graph
+# Helper function to generate and publish the violation graph
 def generate_violation_graph():
-    # Read the CSV into a pandas DataFrame
+   # Read the CSV into a pandas DataFrame
     df = pd.read_csv(CSV_FILE)
 
     # Separate the data based on violation type
     no_mask_df = df[df['violation_type'] == 'no_mask']
     no_earmuff_df = df[df['violation_type'] == 'no_earmuff']
 
+    # Convert timestamp to datetime format for easier manipulation
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    no_mask_df['timestamp'] = pd.to_datetime(no_mask_df['timestamp'])
+    no_earmuff_df['timestamp'] = pd.to_datetime(no_earmuff_df['timestamp'])
+
+    # Extract date and time from the timestamp
+    no_mask_df['date'] = no_mask_df['timestamp'].dt.date
+    no_mask_df['time'] = no_mask_df['timestamp'].dt.hour + no_mask_df['timestamp'].dt.minute / 60.0
+
+    no_earmuff_df['date'] = no_earmuff_df['timestamp'].dt.date
+    no_earmuff_df['time'] = no_earmuff_df['timestamp'].dt.hour + no_earmuff_df['timestamp'].dt.minute / 60.0
+
     # Create a plot
-    plt.figure(figsize=(10,6))
+    plt.figure(figsize=(12, 6))
+   # Plot no mask violations (with exact time on x-axis and date on y-axis)
+    plt.scatter(no_mask_df['time'], no_mask_df['date'], c='r', label="No Mask Violations")
 
-    # Plot no mask violations
-    plt.plot(no_mask_df['timestamp'], [1] * len(no_mask_df), 'ro', label="No Mask Violations")
+    # Plot no earmuff violations (with exact time on x-axis and date on y-axis)
+    plt.scatter(no_earmuff_df['time'], no_earmuff_df['date'], c='b', label="No Earmuff Violations")
 
-    # Plot no earmuff violations
-    plt.plot(no_earmuff_df['timestamp'], [1] * len(no_earmuff_df), 'bo', label="No Earmuff Violations")
+    # Set labels and title
+    plt.xlabel("Time (Hours of the Day)")
+    plt.ylabel("Date")
+    plt.title("Violations Graph (No Mask and No Earmuff)")
 
+    # Rotate the x-axis labels for better readability
     plt.xticks(rotation=45)
-    plt.xlabel("Time")
-    plt.ylabel("Violations")
-    plt.title("Violations Graph")
+    
+    # Set the y-axis to represent hours of the day (0-23)
+    #plt.yticks(range(24))
+
+    # Add legend
     plt.legend()
 
     plt.tight_layout()
 
     # Save the plot to a file
-    plt.savefig("/tmp/violation_graph.png")
+    graph_path = "/tmp/violation_graph.png"
+    plt.savefig(graph_path)
     plt.close()
+
+    # Publish the graph image as base64 to MQTT
+    with open(graph_path, "rb") as img_file:
+        image_data = img_file.read()
+        client.publish("sensor/violation_graph", image_data)
+        print("Published violation graph to topic: sensor/violation_graph")
+
 
 # MQTT callback
 def on_message(client, userdata, message):
@@ -120,13 +147,7 @@ def on_message(client, userdata, message):
 
     elif topic == GET_GRAPH_TOPIC:
         print("Received request for violation graph")
-        generate_violation_graph()
-
-        # Send graph as image
-        with open("/tmp/violation_graph.png", "rb") as img_file:
-            encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
-            client.publish("sensor/violation_graph", encoded_image)
-            print("Published violation graph to topic:", "sensor/violation_graph")
+        threading.Thread(target=generate_violation_graph).start()
 
 # Capture and resize image
 def capture_image():
