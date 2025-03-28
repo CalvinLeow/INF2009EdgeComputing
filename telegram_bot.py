@@ -127,6 +127,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("sensor/picture")
     client.subscribe("sensor/pm_reading")
     client.subscribe("sensor/pm_graph")
+    client.subscribe("sensor/violation_graph")
     client.subscribe("sensor/PMAlertMessage")
     client.subscribe("sensor/SoundAlert")
     client.subscribe("sensor/pm_prediction")
