@@ -5,13 +5,14 @@ import csv
 import os
 import paho.mqtt.client as mqtt
 import time
+import json
 
 # Konfiguration
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
 MQTT_TOPIC_RETRAIN = "audio/retrain"  
 MQTT_TOPIC_ALERT = "sensor/SoundAlert" 
-MQTT_Topic_camAlert = "sensor/noise_status" 
+NOISE_STATUS_ALERT = "sensor/noise_status" 
 MAX_LOG_ENTRIES = 1000  
 DELETE_ENTRIES = 100  
 
@@ -85,7 +86,7 @@ def audio_callback(indata, frames, time_info, status):
         alert_sent = True
         print("Alert sent: SPL over 50 dB")
     
-elif spl_actual <= 50:
+    elif spl_actual <= 50 and alert_sent:
         noise_payload = {
             "status": "LOW",
             "db": spl_actual,
