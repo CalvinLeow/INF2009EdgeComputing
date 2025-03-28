@@ -10,18 +10,17 @@ from datetime import datetime
 # MQTT Konfiguration
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
-SOUND_LEVEL_TOPIC = "topic/getsound"
+SOUND_LEVEL_TOPIC = "topic/getSound"
 GRAPH_TOPIC = "topic/getGraph/sound"
 
 # CSV Datei
 CSV_FILE = "audio_logs/audio_log.csv"
 GRAPH_FILE = "audio_logs/audio_plot.png"
 
-# MQTT Client Setup
-client = mqtt.Client()
-client.connect(MQTT_BROKER, MQTT_PORT, 60)
+
 
 def get_latest_sound_level():
+    print("sound requesting via mqtt")
     try:
         df = pd.read_csv(CSV_FILE)
         latest_row = df.iloc[-1]  # Letzte Zeile
@@ -69,15 +68,14 @@ def on_message(client, userdata, msg):
                 client.publish("sensor/sound_graph", image_data)
                 print("Published sound graph to sensor/sound_graph")
 
+# MQTT Client Setup
+client = mqtt.Client()
+client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.on_message = on_message
 client.subscribe(SOUND_LEVEL_TOPIC)
 client.subscribe(GRAPH_TOPIC)
-client.loop_start()
+client.subscribe([(GRAPH_TOPIC, 0), (SOUND_LEVEL_TOPIC, 0)])
 
-print("MQTT Listener running")
+print("MQTT Listener running.")
 
-try:
-    while True:
-        time.sleep(5) 
-except KeyboardInterrupt:
-    print("End Programm...")
+client.loop_forever()
