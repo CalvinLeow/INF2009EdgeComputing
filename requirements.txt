@@ -1,9 +1,9 @@
 opencv-python==4.9.0.80
 paho-mqtt==2.1.0
-tensorflow==2.10.0
 numpy==1.26.4
 pandas==2.0.0 
 matplotlib==3.7.1
 pyserial==3.5
 python-telegram-bot==21.11.1
 inference-sdk
+tensorflow==2.10.0
