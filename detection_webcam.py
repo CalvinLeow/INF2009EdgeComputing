@@ -140,9 +140,11 @@ def on_message(client, userdata, message):
     elif topic == NOISE_STATUS_TOPIC:
         try:
             data = json.loads(payload)
+            #print(data)
             status = data.get("status", "LOW")
             latest_db_reading = data.get("db", 0)
-            detect_headphone = status == "HIGH"
+            detect_headphones = status == "HIGH"
+            #print(detect_headphone)
             print("Noise status:", "HIGH - EarMuffs detection ON" if detect_headphones else "LOW - EarMuffs detection OFF")
         except json.JSONDecodeError:
             print("Error decoding PM_STATUS payload:", payload)
