@@ -8,7 +8,7 @@ import time
 import json
 
 # Konfiguration
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "172.20.10.2"
 MQTT_PORT = 1883
 MQTT_TOPIC_RETRAIN = "audio/retrain"  
 MQTT_TOPIC_ALERT = "sensor/SoundAlert" 
@@ -49,7 +49,7 @@ def maintain_log_size():
 
 def audio_callback(indata, frames, time_info, status):
     global warning_sent, alert_sent, prev_spl_actual
-
+    
     if status:
         print(status)
 
@@ -71,11 +71,9 @@ def audio_callback(indata, frames, time_info, status):
 
     maintain_log_size()
 
-    print(f"{timestamp} | actual: {spl_actual:.2f} dB | RoC: {roc:.2f} | label: {label}")
-
-    
+   # print(f"{timestamp} | actual: {spl_actual:.2f} dB | RoC: {roc:.2f} | label: {label}")
     # Alert at 50 dB
-    if spl_actual > 50 and not alert_sent:
+    if spl_actual > 50 and alert_sent == False:
         noise_payload = {
             "status": "HIGH",
             "db": round(float(spl_actual), 2),
@@ -86,7 +84,7 @@ def audio_callback(indata, frames, time_info, status):
         alert_sent = True
         print("Alert sent: SPL over 50 dB")
     
-    elif spl_actual <= 50 and alert_sent:
+    elif spl_actual <= 50 and alert_sent == True:
         noise_payload = {
             "status": "LOW",
             "db": round(float(spl_actual), 2),
@@ -96,7 +94,8 @@ def audio_callback(indata, frames, time_info, status):
         client.publish(NOISE_STATUS_ALERT, json.dumps(noise_payload))
         alert_sent = False  
         print("Clear message sent")
-
+    print(spl_actual)
+    #time.sleep(0.5)
 with sd.InputStream(callback=audio_callback, channels=1, samplerate=samplerate, blocksize=frame_length):
     print("Audio monitoring is running. Stop with Ctrl+C.")
     while True:
