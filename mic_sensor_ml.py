@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # MQTT Config
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "172.20.10.2"
 MQTT_PORT = 1883
 MQTT_TOPIC_RETRAIN = "audio/retrain"
 MQTT_TOPIC_ALERT = "sensor/SoundAlert"

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 # MQTT Konfiguration
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "172.20.10.2"
 MQTT_PORT = 1883
 SOUND_LEVEL_TOPIC = "topic/getSound"
 GRAPH_TOPIC = "topic/getGraph/sound"
