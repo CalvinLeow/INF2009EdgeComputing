@@ -128,6 +128,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("sensor/pm_reading")
     client.subscribe("sensor/pm_graph")
     client.subscribe("sensor/PMAlertMessage")
+    client.subscribe("sensor/NoiseAlertMessage")
     client.subscribe("sensor/SoundAlert")
     client.subscribe("sensor/pm_prediction")
     client.subscribe("sensor/violation_graph")
@@ -139,7 +140,6 @@ def on_message(client, userdata, msg):
     """Called when a message is received from the MQTT broker."""
     topic = msg.topic
     print(f"Received message on topic: {topic}.")
-
     # Send the MQTT message to all users who have started the bot
     for chat_id in user_chat_ids.values():
         loop.call_soon_threadsafe(asyncio.create_task, handle_mqtt_message(chat_id, topic, msg.payload))
@@ -155,6 +155,12 @@ async def handle_mqtt_message(chat_id, topic, message):
             decoded_image = base64.b64decode(payload["image"])
             image_file = BytesIO(decoded_image)
             caption = f"{payload['message']}\nPM2.5: {payload['pm_reading']}"
+            await application.bot.send_photo(chat_id=chat_id, photo=image_file, caption=caption)
+        elif topic == "sensor/NoiseAlertMessage":
+            payload = json.loads(message.decode())
+            decoded_image = base64.b64decode(payload["image"])
+            image_file = BytesIO(decoded_image)
+            caption = f"{payload['message']}"
             await application.bot.send_photo(chat_id=chat_id, photo=image_file, caption=caption)
         elif topic == "sensor/pm_reading":
             parsed = json.loads(message.decode())
