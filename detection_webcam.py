@@ -21,10 +21,12 @@ REPORT_TOPIC = "sensor/report"
 GET_PICTURE_TOPIC = "topic/getPicture"
 PICTURE_TOPIC = "sensor/picture"
 GET_GRAPH_TOPIC = "topic/getGraph/camera"
+NOISE_ALERT_TOPIC = "sensor/NoiseAlertMessage"
 
 # Alert interval settings
 latest_pm_reading = 0
 last_pm_alert_time = 0
+last_noise_alert_time = 0
 ALERT_INTERVAL = 15  # seconds
 
 # Camera setup
@@ -145,7 +147,9 @@ def on_message(client, userdata, message):
             latest_db_reading = data.get("db", 0)
             detect_headphones = status == "HIGH"
             #print(detect_headphone)
-            print("Noise status:", "HIGH - EarMuffs detection ON" if detect_headphones else "LOW - EarMuffs detection OFF")
+            if(detect_headphones == True):
+                print("Noise status:", "HIGH - EarMuffs detection ON")
+            #print("Noise status:", "HIGH - EarMuffs detection ON" if detect_headphones else "LOW - EarMuffs detection OFF")
         except json.JSONDecodeError:
             print("Error decoding PM_STATUS payload:", payload)
 
@@ -229,6 +233,22 @@ def prepare_and_publish_pm_alert(image_frame):
         last_pm_alert_time = current_time
     else:
         print("PM alert throttled to avoid spamming.")
+        
+def prepare_and_publish_noise_alert(image_frame):
+    global last_noise_alert_time
+    current_time = time.time()
+    if current_time - last_noise_alert_time >= ALERT_INTERVAL:
+        _, buffer = cv2.imencode('.jpg', image_frame)
+        encoded_image = base64.b64encode(buffer).decode('utf-8')
+        alert_payload = {
+            "message": "No earmuff detected while noise level is high!",
+            "image": encoded_image
+        }
+        client.publish(NOISE_ALERT_TOPIC, json.dumps(alert_payload))
+        print("Noise alert sent to:", NOISE_ALERT_TOPIC)
+        last_noise_alert_time = current_time
+    else:
+        print("Noise alert throttled to avoid spamming.")
 
 # Main detection loop
 def detection_loop():
@@ -253,10 +273,11 @@ def detection_loop():
             if headphone_result == "without_earmuff":
                 add_violation("no_earmuff")
 
-            if mask_result == "no-mask" or headphone_result == "without_earmuff":
-                publish_screenshot(image_frame)
             if detect_mask and mask_result == "no-mask":
                 prepare_and_publish_pm_alert(image_frame)
+            print(headphone_result)
+            if headphone_result == "without_earmuff":
+                prepare_and_publish_noise_alert(image_frame)    
         
         time.sleep(1)
 
