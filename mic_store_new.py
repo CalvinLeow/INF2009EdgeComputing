@@ -100,4 +100,3 @@ with sd.InputStream(callback=audio_callback, channels=1, samplerate=samplerate, 
     print("Audio monitoring is running. Stop with Ctrl+C.")
     while True:
         sd.sleep(100)
-#client.loop_forever()
