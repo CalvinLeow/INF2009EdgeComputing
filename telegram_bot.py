@@ -177,7 +177,7 @@ async def handle_mqtt_message(chat_id, topic, message):
             await application.bot.send_photo(chat_id=chat_id, photo=image_file, caption="PM2.5 Graph")
         elif topic == "sensor/sound_graph":
             image_file = BytesIO(message)
-            await application.bot.send_photo(chat_id=chat_id, photo=image_file, caption="PM2.5 Graph")
+            await application.bot.send_photo(chat_id=chat_id, photo=image_file, caption="Decibel Graph")
         elif topic == "sensor/pm_prediction":
             predicted_value = message.decode()
             await application.bot.send_message(
