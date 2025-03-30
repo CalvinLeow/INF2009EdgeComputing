@@ -12,7 +12,6 @@ MQTT_BROKER = "172.20.10.2"
 MQTT_PORT = 1883
 MQTT_TOPIC_RETRAIN = "audio/retrain"
 MQTT_TOPIC_ALERT = "sensor/SoundAlert"
-PREDICTION_TOPIC = "sensor/sound_prediction"
 
 # CSV file path & model filename
 CSV_FILE = "audio_logs/audio_log.csv"
@@ -95,7 +94,6 @@ def predict_time_to_50dB():
         message = f"SPL predicted to exceed 50 dB in {predicted_time} minutes."
         client.publish(MQTT_TOPIC_ALERT, message)
         print(f"MQTT Alert sent: {message}")
-        client.publish(PREDICTION_TOPIC, message)
         
     except Exception as e:
         print(f"Prediction error: {str(e)}")
@@ -111,11 +109,5 @@ client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.subscribe(MQTT_TOPIC_RETRAIN)
 
 print("Listening for retrain requests...")
-
-# Run prediction loop
-#time.sleep(5)
-#while True:
- #   predict_time_to_50dB()
-  #  time.sleep(10)
 
 client.loop_forever()
