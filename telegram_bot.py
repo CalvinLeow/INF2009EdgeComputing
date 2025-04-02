@@ -36,8 +36,8 @@ MQTT_BUTTONS = {
 
 # Define non-MQTT buttons and their actions
 NON_MQTT_BUTTONS = {
-    "button_1": "You pressed 'Next Button 1'. Performing some action.",
-    "button_2": "You pressed 'Next Button 2'. Performing another action.",
+    #"button_1": "You pressed 'Next Button 1'. Performing some action.",
+    "button_2": "Select from a list of available graphs to generate.",
 }
 
 # Set up MQTT client
@@ -52,7 +52,7 @@ def get_keyboard():
         [InlineKeyboardButton("Take Picture", callback_data="mqtt_button_1")],
         [InlineKeyboardButton("Current PM Reading", callback_data="mqtt_button_2")],
         [InlineKeyboardButton("Current Sound Reading", callback_data="mqtt_button_3")],
-        [InlineKeyboardButton("Placeholder Button", callback_data="button_1")],
+        #[InlineKeyboardButton("Placeholder Button", callback_data="button_1")],
         [InlineKeyboardButton("Graphs", callback_data="button_2")]
     ])
 
