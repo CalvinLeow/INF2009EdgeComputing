@@ -4,24 +4,26 @@ Smart Environmental Monitoring System for Construction Sites is an AI-powered sa
 ## MQTT
 > The team implemented the Message Queuing Telemetry Transport (MQTT) protocol to facilitate communication both among devices and between devices and the Telegram bot. This was achieved using a publish-subscribe model, with a carefully organized set of topics to ensure seamless and efficient data exchange across all system components.
 
-### FileName.py
+### telegram_bot.py
 
-Words Here
+MQTT functionality was inplace in all the edge devices - but a central portion of the MQTT code is stored in the Telegram bot python file. Firstly, the Telegram bot functions as a "hub" where most of the edge devices communicate to the end user. The list of topics and callback functionalities with the code was designed to be easily extendable and scalable, utilising dictionaries, handlers and appropriate call back functions to enable MQTT communications to include things like graphs.
+
+The team chose to use MQTT because it was simple, efficient and its familiarity and ease of use.
 
 ### Tested/Tried (Additional Notes):
 
-Words Here
+The team tested MQTT communication for reliability, latency, scalability, and data handling by simulating multiple edge devices, monitoring message delivery efficiency, and ensuring proper data formatting and parsing.
 
 ## Telegram Bot
 > The team chose a Telegram bot for its practicality, ensuring site workers receive alerts directly on their phones. Using BotFather and the Telegram Bot API, a secure, user-friendly bot was developed to send commands via MQTT and receive text, images, and graphs for alerts. It seamlessly integrates with Telegram Groups and facilitates communication between workers and managers.
 
-### FileName.py
+### telegram_bot.py
 
-Words Here
+The Telegram bot was built using Telegram's BotFather and official API. The bot is integrated to support the MQTT architecture, containing easily extendable and scalable buttons and UI as well as efficient and adaptable handlers and callback functions to support all required data types to be sent to the user. It handles all the on_connect and on_message interactions to ensure seamless and intuitive operation of the system. It also contains authentication and security measures written to ensure only authorised users can access the bot, this was done by having a whitelist that prevents unauthorised users from communicating with the bot entirely. Similarly, the user or group's ID is also stored dynamically to know who and where to send the output of edge devices to.
 
 ### Tested/Tried (Additional Notes):
 
-Words Here
+The team considered developing a web application, but decided not to as it would be unnecessarily complicated and would not necessarily be better than a simple and intuitive Telegram bot. The team felt that a bot that can be easily accessible by phone, and can be used individually or as a group providing a realistic and appropriate use case scenario to support our end users. This is because construction work is frequently on the move, and a phone notification alert would be an acceptable level of effort required for busy workers to still fully utilise the system. The functinality of having the bot in a group chat is also an essential reason for choosing to use a Telegram bot, as workers and managers will have a common place to receive information, manage the bot, and discuss their work. They will be able to continue working the way they have used to - only this time with a beneficial add-on that does not distract from their jobs.
 
 ## Particulate Sensor
 > The system uses a particulate matter sensor to measure PM2.5 levels in real-time. The data processed checks against safety thresholds (55 µg/m³), and logs readings with timestamps. High PM2.5 triggers MQTT alerts and Telegram notifications, while historical data is stored for ML analysis and visualization.
