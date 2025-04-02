@@ -31,23 +31,23 @@ This Python script is designed to monitor PM2.5 air quality levels using a PMS50
 
 ### Tested/Tried (Additional Notes):
 
-1. Issues with reading data from sensor 
+1. Issues with reading data from sensor  
 When checking virtual pins using "raspi-gpio get", it showed:
 
-GPIO 14: level=1 alt=5 func=TXD1
-GPIO 15: level=1 alt=5 func=RXD1
+GPIO 14: level=1 alt=5 func=TXD1  
+GPIO 15: level=1 alt=5 func=RXD1  
 
 This meant GPIO14/15 were set to Bluetooth (UART1).
 
-Added: 
-enable_uart=1 → Turned on the serial hardware (UART0).
-dtoverlay=disable-bt → Disabled Bluetooth so the UART0 could use GPIO14/15 (TXD0/RXD0).
-Into:
+Added:  
+enable_uart=1 → Turned on the serial hardware (UART0).  
+dtoverlay=disable-bt → Disabled Bluetooth so the UART0 could use GPIO14/15 (TXD0/RXD0).  
+Into:  
 sudo nano /boot/firmware/config.txt
 
-This changes the pins to:
-GPIO 14: level=1 alt=5 func=TXD0
-GPIO 15: level=1 alt=5 func=RXD0
+This changes the pins to:  
+GPIO 14: level=1 alt=5 func=TXD0  
+GPIO 15: level=1 alt=5 func=RXD0  
 
 which finally allowed pi to receive the data through the sensor.
 
@@ -55,10 +55,6 @@ which finally allowed pi to receive the data through the sensor.
 - Identified valid data frames using the start headers 0x42 0x4D.
 - Parsed the binary data using Python's struct.unpack() method to extract readable PM2.5 values.
 - There is a total of 6 readings from the sensor which is PM1, PM2.5, PM10 in test and environmental values. The value we chose to focus on is PM2.5 environmental. 
-
-### Tested/Tried (Additional Notes):
-
-Words Here
 
 ## Sound Sensor
 > The system utilizes the webcam's microphone to measure the decibel level in real time. The processed data is compared against a safety threshold of 50 dB and logged with timestamps, including the change from the previous value. If a high decibel level is detected, an MQTT alert and a Telegram notification are triggered. Additionally, historical data is stored for machine learning analysis and visualization.
