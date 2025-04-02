@@ -82,13 +82,24 @@ Words Here
 ## ML Predictions
 > The system uses two lightweight computer vision models to detect ear muffs and face masks. When high noise levels or PM2.5 concentrations are detected, it captures an image and checks for PPE compliance. If non-compliance is found, a violation alert with the image is sent via MQTT to a Telegram bot for instant notification.
 
-### FileName.py
+### pm_sensor_ml.py
 
-Words Here
+This script performs machine learning-based predictions for PM2.5 air quality levels. It is trained on a dataset of historical PSI readings (psi_df_2016_2019.csv) combined with real-time sensor data (sensor_readings.csv). The script uses a 3-step lag window to predict PM2.5 levels 5 hours into the future. A Random Forest Regressor is used to train the model, with extracted features including year, month, day, hour, and recent national readings. The model is evaluated using MAE, MSE, and R² metrics to ensure robustness.
+
+In real-time, the script retrieves the latest three sensor readings and formats them into a prediction input vector. It then uses the trained model to forecast the PM2.5 level 5 hours ahead. If the predicted value exceeds a threshold (e.g., 10), an alert is published to the sensor/pm_prediction MQTT topic. This message is picked up by the Telegram bot, which notifies the user immediately.
+
+The script runs continuously, making predictions every 10 seconds, and is capable of integrating with any downstream modules such as visualization dashboards, retraining triggers, or hardware alerts.
 
 ### Tested/Tried (Additional Notes):
 
-Words Here
+Combined real PSI data (2016–2019) with sensor readings to improve model accuracy and generalization.
+
+Verified model performance through scikit-learn evaluation metrics:
+MAE: 2.2961309783398023, MSE: 11.82005378515643, R2: 0.9334331294553219
+
+Implemented fault-tolerant CSV reading and ensured smooth operation with incomplete data.
+
+Successfully simulated high PM2.5 values to verify MQTT alerting via sensor/pm_prediction.
 
 ## Camera Detection
 > The system uses two lightweight computer vision models to detect ear muffs and face masks. When high noise levels or PM2.5 concentrations are detected, it captures an image and checks for PPE compliance. If non-compliance is found, a violation alert with the image is sent via MQTT to a Telegram bot for instant notification.
