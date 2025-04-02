@@ -104,13 +104,19 @@ Successfully simulated high PM2.5 values to verify MQTT alerting via sensor/pm_p
 ## Camera Detection
 > The system uses two lightweight computer vision models to detect ear muffs and face masks. When high noise levels or PM2.5 concentrations are detected, it captures an image and checks for PPE compliance. If non-compliance is found, a violation alert with the image is sent via MQTT to a Telegram bot for instant notification.
 
-### FileName.py
+### detection_webcam.py
 
-Words Here
+This Python script is a real-time construction site safety monitoring system that uses a webcam, deep learning models, and MQTT communication to detect and report personal protective equipment (PPE) violations. Specifically, it checks whether workers are wearing face masks during high levels of PM2.5 (air pollution) and earmuffs during high noise conditions.
+
+The system captures images using a connected webcam and detects the presence of people using OpenCV’s HOG person detector. If a person is detected, the system uses pre-trained Keras models to classify whether they are wearing a face mask or earmuffs. These detections are only triggered when the corresponding environmental conditions are met (i.e., high PM2.5 or high noise levels), based on MQTT messages received from external sensors.
+
+When a violation is detected (no mask or no earmuff), the system logs it to a CSV file along with a timestamp. It also publishes alerts through MQTT, including a base64-encoded image of the worker violating PPE requirements. Additionally, on request via MQTT, the system can generate a graph showing the time and date of all violations and publish it back to a subscribed topic.
+
+The script runs two main components simultaneously using threading: one continuously listens for MQTT messages and the other continuously processes camera frames to detect violations. This makes the system both responsive to environmental changes and capable of real-time monitoring and alerting.
 
 ### Tested/Tried (Additional Notes):
 
-Words Here
+For earmuff detection, we initially used a custom-trained YOLOv5 model on annotated video frames but found it resource-intensive for real-time use on lower-end devices. We then switched to a MobileNet-based classifier trained on cropped images of workers with and without earmuffs. The final earmuff model was retrained using a combination of open-source datasets with different angle conditions to improve robustness.
 
 
 
