@@ -25,12 +25,36 @@ The Telegram bot was built using Telegram's BotFather and official API. The bot 
 
 The team considered developing a web application, but decided not to as it would be unnecessarily complicated and would not necessarily be better than a simple and intuitive Telegram bot. The team felt that a bot that can be easily accessible by phone, and can be used individually or as a group providing a realistic and appropriate use case scenario to support our end users. This is because construction work is frequently on the move, and a phone notification alert would be an acceptable level of effort required for busy workers to still fully utilise the system. The functinality of having the bot in a group chat is also an essential reason for choosing to use a Telegram bot, as workers and managers will have a common place to receive information, manage the bot, and discuss their work. They will be able to continue working the way they have used to - only this time with a beneficial add-on that does not distract from their jobs.
 
-## Particulate Sensor
-> The system uses a particulate matter sensor to measure PM2.5 levels in real-time. The data processed checks against safety thresholds (55 µg/m³), and logs readings with timestamps. High PM2.5 triggers MQTT alerts and Telegram notifications, while historical data is stored for ML analysis and visualization.
+### pm_sensor.py
 
-### FileName.py
+This Python script is designed to monitor PM2.5 air quality levels using a PMS5003 sensor connected via a serial port on Raspberry Pi. It reads the sensor data in real-time and publishes the PM2.5 status to an MQTT broker under the topic sensor/pm_status, indicating whether the air quality is high or low based on a configurable threshold (set to 5 for testing purpose). The script also logs all readings into two CSV files: one for general record-keeping with timestamps (pm_readings.csv) and another (sensor_readings.csv) formatted for use in machine learning tasks. When it receives a message on topic/getPM, it responds by sending the last five PM2.5 readings in JSON format. When it receives a message on topic/getGraph/pm, it generates a line graph of the latest 30 readings and publishes the image to the MQTT topic sensor/pm_graph. The code ensures proper timestamp formatting in the Singapore timezone (UTC+8) and includes basic error handling for incomplete or corrupt sensor data frames. Additionally, it uses libraries such as pandas and matplotlib for data processing and visualization, and automatically creates the necessary CSV files if they do not already exist.
 
-Words Here
+### Tested/Tried (Additional Notes):
+
+1. Issues with reading data from sensor 
+When checking virtual pins using "raspi-gpio get", it showed:
+
+GPIO 14: level=1 alt=5 func=TXD1
+GPIO 15: level=1 alt=5 func=RXD1
+
+This meant GPIO14/15 were set to Bluetooth (UART1).
+
+Added: 
+enable_uart=1 → Turned on the serial hardware (UART0).
+dtoverlay=disable-bt → Disabled Bluetooth so the UART0 could use GPIO14/15 (TXD0/RXD0).
+Into:
+sudo nano /boot/firmware/config.txt
+
+This changes the pins to:
+GPIO 14: level=1 alt=5 func=TXD0
+GPIO 15: level=1 alt=5 func=RXD0
+
+which finally allowed pi to receive the data through the sensor.
+
+2. Learned that the sensor outputs data in a binary frame structure.
+- Identified valid data frames using the start headers 0x42 0x4D.
+- Parsed the binary data using Python's struct.unpack() method to extract readable PM2.5 values.
+- There is a total of 6 readings from the sensor which is PM1, PM2.5, PM10 in test and environmental values. The value we chose to focus on is PM2.5 environmental. 
 
 ### Tested/Tried (Additional Notes):
 
