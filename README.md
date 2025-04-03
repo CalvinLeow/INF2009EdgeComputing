@@ -77,7 +77,9 @@ The code listens to the telegram_bot.py code. When it recieves a MQTT message fr
 
 ### Tested/Tried (Additional Notes):
 
-Started the mic_sensor_new.py in the source audio/bin/activate
+Started the mic_sensor_new.py, mic_sensor_ml.py and mic_sensor_handler.py in the source audio/bin/activate.
+Tested with continous sound (playing music) and short sounds (own voice).
+
 ## ML Predictions
 > The system uses two lightweight computer vision models to detect ear muffs and face masks. When high noise levels or PM2.5 concentrations are detected, it captures an image and checks for PPE compliance. If non-compliance is found, a violation alert with the image is sent via MQTT to a Telegram bot for instant notification.
 
