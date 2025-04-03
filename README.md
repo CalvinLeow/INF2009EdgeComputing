@@ -64,7 +64,7 @@ which finally allowed pi to receive the data through the sensor.
 reads the noice, which is recieved by the microphone and calculated it to decibel
 it stores the entry with a timestamp and the difference to the last value in a .csv file localy
 when it measures a decibel higher than 50 dB, it triggers an MQTT message with the input "HIGH" to the detection_webcam.py code
-When the .csv file reaches 1000 entries, it deletes the first 100 entries and sends an MQTT message to the mic_sensor_ml.py to retrain the ML model
+When the .csv file reaches 2000 entries, it deletes the first 500 entries and sends an MQTT message to the mic_sensor_ml.py to retrain the ML model
 
 ### mic_sensor_ml.py
 
